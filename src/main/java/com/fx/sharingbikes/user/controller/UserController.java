@@ -3,7 +3,10 @@ package com.fx.sharingbikes.user.controller;
 import com.fx.sharingbikes.common.constants.Constants;
 import com.fx.sharingbikes.common.exception.SharingBikesException;
 import com.fx.sharingbikes.common.resp.ApiResult;
+import com.fx.sharingbikes.common.rest.BaseController;
 import com.fx.sharingbikes.user.entity.LoginInfo;
+import com.fx.sharingbikes.user.entity.User;
+import com.fx.sharingbikes.user.entity.UserElement;
 import com.fx.sharingbikes.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("user")
 @Slf4j
-public class UserController {
+public class UserController extends BaseController {
 
     @Autowired
     @Qualifier("userServiceImpl")
@@ -32,6 +35,24 @@ public class UserController {
             }
             String token = userService.login(data, key);
             resp.setData(token);
+        } catch (SharingBikesException e) {
+            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
+            resp.setMessage(e.getMessage());
+        } catch (Exception e) {
+            log.error("Fail to login", e);
+            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
+            resp.setMessage("内部错误");
+        }
+        return resp;
+    }
+
+    @RequestMapping("modifyNickName")
+    public ApiResult modifyNickName(@RequestBody User user) {
+        ApiResult resp = new ApiResult();
+        try {
+            UserElement userElement = getCurrentUser();
+            user.setId(userElement.getUserId());
+            userService.modifyNickName(user);
         } catch (SharingBikesException e) {
             resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
             resp.setMessage(e.getMessage());

@@ -74,6 +74,11 @@ public class UserServiceImpl implements UserService {
         return token;
     }
 
+    @Override
+    public void modifyNickName(User user) throws SharingBikesException{
+        userMapper.updateByPrimaryKeySelective(user);
+    }
+
     private String generateToken(User user) {
         String source = user.getId() + ":" + user.getMobile() + ":" + System.currentTimeMillis();
         return MD5Util.getMD5(source);
