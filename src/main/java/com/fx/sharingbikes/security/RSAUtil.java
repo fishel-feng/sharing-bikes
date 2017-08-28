@@ -3,7 +3,6 @@ package com.fx.sharingbikes.security;
 
 import javax.crypto.Cipher;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
