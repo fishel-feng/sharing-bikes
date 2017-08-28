@@ -1,0 +1,7 @@
+spring:
+  datasource:
+     name: test
+     url: jdbc:mysql://localhost:3306/sharing_bikes
+     username: root
+     password:
+
