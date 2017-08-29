@@ -20,5 +20,7 @@ public class Parameters {
     private int redisMaxIdle;
     @Value("${redis.max-wait-millis}")
     private int redisMaxWaitMillis;
-    
+
+    @Value("#{'${security.noneSecurityPath}'.split(',')}")
+    private List<String> noneSecurityPath;
 }
