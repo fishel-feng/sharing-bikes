@@ -1,5 +1,6 @@
 package com.fx.sharingbikes.cache;
 
+import com.fx.sharingbikes.common.exception.SharingBikesException;
 import com.fx.sharingbikes.user.entity.UserElement;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,5 +126,65 @@ public class CommonCacheUtil {
             }
         }
         return userElement;
+    }
+
+    public int cacheForVerificationCode(String key, String verCode, String type, int second, String ip) throws SharingBikesException {
+        JedisPool pool = jedisPoolWrapper.getJedisPool();
+        if (pool != null) {
+            try (Jedis jedis = pool.getResource()) {
+                jedis.select(0);
+                try {
+                    String ipKey = "ip." + ip;
+                    if (ip == null) {
+                        return 3;
+                    } else {
+                        String ipSendCount = jedis.get(ipKey);
+                        try {
+                            if (ipSendCount != null && Integer.parseInt(ipSendCount) >= 10) {
+                                return 3;
+                            }
+                        } catch (NumberFormatException e) {
+                            log.error("Fail to process ip send count", e);
+                            return 3;
+                        }
+                        long succ = jedis.setnx(key, verCode);
+                        if (succ == 0) {
+                            return 1;
+                        }
+                        String sendCount = jedis.get(key + "." + type);
+                        try {
+                            if (sendCount != null && Integer.parseInt(sendCount) >= 10) {
+                                jedis.del(key);
+                                return 2;
+                            }
+                        } catch (NumberFormatException e) {
+                            log.error("Fail to process send count", e);
+                            jedis.del(key);
+                            return 2;
+                        }
+                        try {
+                            jedis.expire(key, second);
+                            long val = jedis.incr(key + "." + type);
+                            if (val == 1) {
+                                jedis.expire(key + "." + type, 86400);
+                            }
+                            jedis.incr(ipKey);
+                            if (val == 1) {
+                                jedis.expire(ipKey, 86400);
+                            }
+                        } catch (Exception e) {
+                            log.error("Fail to cache data into redis", e);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Fail to set vercode to redis", e);
+                    throw e;
+                }
+            } catch (Exception e) {
+                log.error("Fail to cache for expiry", e);
+                throw new SharingBikesException("Fail to cache for expiry");
+            }
+        }
+        return 0;
     }
 }
