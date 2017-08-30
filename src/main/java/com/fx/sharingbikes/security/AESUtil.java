@@ -37,20 +37,17 @@ public class AESUtil {
     }
 
 //    public static void main(String[] args) throws Exception {
-//        /**AES加密数据**/
 //        String key = "123456789abcdfgt";
 //        String dataToEn = "{'mobile':'13009715105','code':'6666','platform':'android'}";
 //        String enResult = encrypt(dataToEn, key);
 //        System.out.println(enResult);
 //        /**RSA 加密AES的密钥**/
-//        byte[] enKey = RSAUtil.encryptByPublicKey(key.getBytes("UTF-8"), "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC5boVUQ95FTf3WUbf4ApFt 6RXY9dAgBDrEqxFoEhsYZSWRmsu7w8NKjGS0nTMUKTHl9Lm3Vjc2IOrohnK6 g2b5CSGFgBU453KF3dHYWSB6+lcugsbby71OU0GsQZ96n0FlJRaIzi4t+2RH PnOq/mk/KVWjpv4Rl7qbTdgPvaDMqwIDAQAB");
+//        byte[] enKey = RSAUtil.encryptByPublicKey(key.getBytes("UTF-8"), "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC6BrrZJ4Tj2YRaiP/um6ZAdbIC4RmrRRTsom80y0wwt1IGNmc8z1zGK7bEJcZ0fgDjGn76xM95AQfxxrlA0Jp95PFicMg1bA5gOG1QmQR+IYYADjmteKJatBQljIawbjNBN3IpbwyZj8wn25zvDTAbnRg+oQaCL6K4mdobpwJVSwIDAQAB");
 //        String baseKey = Base64Util.encode(enKey);
 //        System.out.println(baseKey);
-//
-//        byte[] de = Base64Util.decode(baseKey);
-//        byte[] deKeyResult = RSAUtil.decryptByPrivateKey(de);
-//        System.out.println(new String(deKeyResult,"UTF-8"));
-//        String deResult = decrypt(enResult,key);
-//        System.out.println(deResult);
+//        //服务端RSA解密AES的key
+//        byte[] keybyte = RSAUtil.decryptByPrivateKey(Base64Util.decode(baseKey));
+//        String keyR = new String(keybyte, "UTF-8");
+//        System.out.println(keyR);
 //    }
 }
