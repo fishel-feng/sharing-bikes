@@ -57,7 +57,8 @@ public class UserServiceImpl implements UserService {
             String mobile = jsonObject.getString("mobile");
             String code = jsonObject.getString("code");
             String platform = jsonObject.getString("platform");
-            if (StringUtils.isBlank(mobile) || StringUtils.isBlank(code)) {
+            String channelId = jsonObject.getString("channelId");
+            if (StringUtils.isBlank(mobile) || StringUtils.isBlank(code) || StringUtils.isBlank(platform) || StringUtils.isBlank(channelId)) {
                 throw new Exception();
             }
             String verCode = cacheUtil.getCacheValue(mobile);
@@ -83,6 +84,7 @@ public class UserServiceImpl implements UserService {
             userElement.setUserId(user.getId());
             userElement.setToken(token);
             userElement.setPlatform(platform);
+            userElement.setPushChannelId(channelId);
             cacheUtil.putTokenWhenLogin(userElement);
         } catch (Exception e) {
             log.error("Fail to decrypt data", e);
@@ -127,9 +129,9 @@ public class UserServiceImpl implements UserService {
             String imgUrlName = QiniuFileUploadUtil.uploadHeadImg(file);
             user.setHeadImg(imgUrlName);
             userMapper.updateByPrimaryKeySelective(user);
-            return Constants.QINIU_HEAD_IMG_BUCKET_URL+"/"+Constants.QINIU_HEAD_IMG_BUCKET_NAME+"/"+imgUrlName;
+            return Constants.QINIU_HEAD_IMG_BUCKET_URL + "/" + Constants.QINIU_HEAD_IMG_BUCKET_NAME + "/" + imgUrlName;
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
             throw new SharingBikesException("头像上传失败");
         }
     }

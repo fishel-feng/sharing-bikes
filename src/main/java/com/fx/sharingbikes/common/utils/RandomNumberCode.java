@@ -11,4 +11,8 @@ public class RandomNumberCode {
         return StringUtils.substring(String.valueOf(random.nextInt()), 2, 6);
     }
 
+    public static String randomNo() {
+        Random random = new Random();
+        return String.valueOf(Math.abs(random.nextInt() * -10));
+    }
 }

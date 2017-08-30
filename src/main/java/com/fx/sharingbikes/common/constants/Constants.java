@@ -1,5 +1,7 @@
 package com.fx.sharingbikes.common.constants;
 
+import com.baidu.yun.push.constants.BaiduPushConstants;
+
 public class Constants {
 
     public static final int RESP_STATUS_OK = 200;
@@ -29,4 +31,10 @@ public class Constants {
     public static final String QINIU_HEAD_IMG_BUCKET_NAME = "sharing-bikes";
 
     public static final String QINIU_HEAD_IMG_BUCKET_URL = "ovhaef7r0.bkt.clouddn.com";
+
+    public static final String BAIDU_YUN_PUSH_API_KEY = "zmMGiOG09YclSlT4fDF7jd0k";
+
+    public static final String BAIDU_YUN_PUSH_SECRET_KEY = "DE4uC1WL7Puoq9rNXGdClt7nkLOhTnyI";
+
+    public static final String CHANNEL_REST_URL = BaiduPushConstants.CHANNEL_REST_URL;
 }
