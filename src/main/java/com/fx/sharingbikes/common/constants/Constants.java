@@ -21,4 +21,12 @@ public class Constants {
     public static final String MDSMS_REST_URL = "https://api.miaodiyun.com/20150822";
 
     public static final String MDSMS_VERCODE_TPLID = "66220562";
+
+    public static final String QINIU_ACCESS_KEY = "MzdxhSHhQB2nbwX2ZI49flFATFaHFgW6h6IpoD71";
+
+    public static final String QINIU_SECRET_KEY = "4K8av9lcZO6-sXNeI9Mx51N4QESUTQvMn__xSt1r";
+
+    public static final String QINIU_HEAD_IMG_BUCKET_NAME = "sharing-bikes";
+
+    public static final String QINIU_HEAD_IMG_BUCKET_URL = "ovhaef7r0.bkt.clouddn.com";
 }

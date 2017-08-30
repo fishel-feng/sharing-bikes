@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -76,6 +77,24 @@ public class UserController extends BaseController {
             resp.setMessage(e.getMessage());
         } catch (Exception e) {
             log.error("Fail to send sms vercode", e);
+            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
+            resp.setMessage("内部错误");
+        }
+        return resp;
+    }
+
+    @PostMapping("uploadHeadImg")
+    public ApiResult<String> uploadHeadImg(HttpServletRequest req, @RequestParam(required = false) MultipartFile file) {
+        ApiResult<String> resp = new ApiResult<>();
+        try {
+            UserElement userElement = getCurrentUser();
+            userService.uploadHeadImg(file, userElement.getUserId());
+            resp.setMessage("上传成功");
+        } catch (SharingBikesException e) {
+            resp.setCode(e.getStatusCode());
+            resp.setMessage(e.getMessage());
+        } catch (Exception e) {
+            log.error("Fail to update user info", e);
             resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
             resp.setMessage("内部错误");
         }
