@@ -2,6 +2,7 @@ package com.fx.sharingbikes.bike.service;
 
 import com.fx.sharingbikes.bike.dao.BikeMapper;
 import com.fx.sharingbikes.bike.entity.Bike;
+import com.fx.sharingbikes.bike.entity.BikeLocation;
 import com.fx.sharingbikes.bike.entity.BikeNoGen;
 import com.fx.sharingbikes.common.exception.SharingBikesException;
 import com.fx.sharingbikes.common.utils.BaiduPushUtil;
@@ -104,14 +105,14 @@ public class BikeServiceImpl implements BikeService {
 
     @Override
     @Transactional
-    public void lockBike(Long bikeNo) throws SharingBikesException {
+    public void lockBike(BikeLocation bikeLocation) throws SharingBikesException {
         try {
-            RideRecord record = rideRecordMapper.selectBikeRecordOnGoing(bikeNo);
+            RideRecord record = rideRecordMapper.selectBikeRecordOnGoing(bikeLocation.getBikeNumber());
             if (record == null) {
                 throw new SharingBikesException("骑行记录不存在");
             }
             Long userId = record.getUserId();
-            Bike bike = bikeMapper.selectByBikeNo(bikeNo);
+            Bike bike = bikeMapper.selectByBikeNo(bikeLocation.getBikeNumber());
             if (bike == null) {
                 throw new SharingBikesException("单车不存在");
             }
@@ -138,8 +139,8 @@ public class BikeServiceImpl implements BikeService {
             Wallet wallet = walletMapper.selectByUserId(userId);
             wallet.setRemainSum(wallet.getRemainSum().subtract(cost));
             walletMapper.updateByPrimaryKeySelective(wallet);
-            Query query = Query.query(Criteria.where("bike_no").is(bikeNo));
-            Update update = Update.update("status", BIKE_LOCK);
+            Query query = Query.query(Criteria.where("bike_no").is(bikeLocation.getBikeNumber()));
+            Update update = Update.update("status", BIKE_LOCK).set("location.coordinates", bikeLocation.getCoordinates());
             mongoTemplate.updateFirst(query, update, "bike-position");
         } catch (Exception e) {
             log.error("Fail to lock bike", e);

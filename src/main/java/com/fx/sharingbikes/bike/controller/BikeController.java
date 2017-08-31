@@ -76,10 +76,10 @@ public class BikeController extends BaseController {
     }
 
     @RequestMapping("lockBike")
-    public ApiResult lockBike(@RequestBody Bike bike) {
+    public ApiResult lockBike(@RequestBody BikeLocation bikeLocation) {
         ApiResult<List<BikeLocation>> resp = new ApiResult<>();
         try {
-            bikeService.lockBike(bike.getNumber());
+            bikeService.lockBike(bikeLocation);
             resp.setMessage("锁车成功");
         } catch (SharingBikesException e) {
             resp.setCode(e.getStatusCode());
