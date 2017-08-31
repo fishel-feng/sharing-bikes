@@ -17,6 +17,8 @@ import com.fx.sharingbikes.user.entity.User;
 import com.fx.sharingbikes.user.entity.UserElement;
 import com.fx.sharingbikes.wallet.dao.WalletMapper;
 import com.fx.sharingbikes.wallet.entity.Wallet;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -27,7 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -75,7 +80,7 @@ public class BikeServiceImpl implements BikeService {
     public void unLockBike(UserElement currentUser, Long bikeNo) throws SharingBikesException {
         try {
             User user = userMapper.selectByPrimaryKey(currentUser.getUserId());
-            if (user.getVerifyFlag() == NOT_VERIFY) {
+            if (Objects.equals(user.getVerifyFlag(), NOT_VERIFY)) {
                 throw new SharingBikesException("用户尚未认证");
             }
             RideRecord record = rideRecordMapper.selectRecordNotClosed(currentUser.getUserId());
@@ -89,7 +94,7 @@ public class BikeServiceImpl implements BikeService {
 //        BaiduPushUtil.pushMsgToSingleDevice(currentUser, "{\"title\":\"TEST\",\"description\":\"Hello baidu push!\"}");
             Query query = Query.query(Criteria.where("bike_no").is(bikeNo));
             Update update = Update.update("status", BIKE_UNLOCK);
-            mongoTemplate.updateFirst(query, update, "bike-position");
+            mongoTemplate.updateFirst(query, update, "bike_position");
             RideRecord rideRecord = new RideRecord();
             rideRecord.setBikeNo(bikeNo);
             String recordNo = new Date().getTime() + RandomNumberCode.randomNo();
@@ -141,10 +146,35 @@ public class BikeServiceImpl implements BikeService {
             walletMapper.updateByPrimaryKeySelective(wallet);
             Query query = Query.query(Criteria.where("bike_no").is(bikeLocation.getBikeNumber()));
             Update update = Update.update("status", BIKE_LOCK).set("location.coordinates", bikeLocation.getCoordinates());
-            mongoTemplate.updateFirst(query, update, "bike-position");
+            mongoTemplate.updateFirst(query, update, "bike_position");
         } catch (Exception e) {
             log.error("Fail to lock bike", e);
             throw new SharingBikesException("锁定单车失败");
+        }
+    }
+
+    @Override
+    public void reportLocation(BikeLocation bikeLocation) throws SharingBikesException {
+        try {
+            RideRecord record = rideRecordMapper.selectBikeRecordOnGoing(bikeLocation.getBikeNumber());
+            if (record == null) {
+                throw new SharingBikesException("骑行记录不存在");
+            }
+            DBObject object = mongoTemplate.getCollection("ride_contrail").findOne(new BasicDBObject("record_no", record.getBikeNo()));
+            if (object == null) {
+                List<BasicDBObject> list = new ArrayList<>();
+                BasicDBObject temp = new BasicDBObject("loc", bikeLocation.getCoordinates());
+                list.add(temp);
+                BasicDBObject insertObj = new BasicDBObject("record_no", record.getRecordNo()).append("bike_no", record.getBikeNo()).append("contrail", list);
+                mongoTemplate.insert(insertObj,"ride_contrail");
+            }else {
+                Query query=new Query(Criteria.where("record_no").is(record.getRecordNo()));
+                Update update=new Update().push("contrail",new BasicDBObject("loc",bikeLocation.getCoordinates()));
+                mongoTemplate.updateFirst(query,update,"ride_contrail");
+            }
+        } catch (SharingBikesException e) {
+            log.error("Fail to report location", e);
+            throw new SharingBikesException("上报坐标失败");
         }
     }
 

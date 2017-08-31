@@ -9,9 +9,12 @@ import com.fx.sharingbikes.common.constants.Constants;
 import com.fx.sharingbikes.common.exception.SharingBikesException;
 import com.fx.sharingbikes.common.resp.ApiResult;
 import com.fx.sharingbikes.common.rest.BaseController;
+import com.fx.sharingbikes.record.entity.RideContrail;
+import com.fx.sharingbikes.user.entity.UserElement;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -87,6 +90,42 @@ public class BikeController extends BaseController {
         } catch (Exception e) {
             log.error("Fail to lock bike", e);
             resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
+        }
+        return resp;
+    }
+
+    @RequestMapping("reportLocation")
+    public ApiResult reportLocation(@RequestBody BikeLocation bikeLocation) {
+        ApiResult<List<BikeLocation>> resp = new ApiResult<>();
+        try {
+            bikeService.reportLocation(bikeLocation);
+            resp.setMessage("上报坐标成功");
+        } catch (SharingBikesException e) {
+            resp.setCode(e.getStatusCode());
+            resp.setMessage(e.getMessage());
+        } catch (Exception e) {
+            log.error("Fail to report location", e);
+            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
+            resp.setMessage("内部错误");
+        }
+        return resp;
+    }
+
+    @RequestMapping("contrail/{recordNo}")
+    public ApiResult<RideContrail> rideContrail(@PathVariable("recordNo") String recordNo) {
+        ApiResult<RideContrail> resp = new ApiResult<>();
+        try {
+            UserElement userElement = getCurrentUser();
+            RideContrail contrail = bikeGeoService.rideContrail("ride_contrail", recordNo);
+            resp.setData(contrail);
+            resp.setMessage("查询成功");
+        } catch (SharingBikesException e) {
+            resp.setCode(e.getStatusCode());
+            resp.setMessage(e.getMessage());
+        } catch (Exception e) {
+            log.error("Fail to query ride record", e);
+            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
+            resp.setMessage("内部错误");
         }
         return resp;
     }

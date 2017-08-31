@@ -9,7 +9,7 @@ public interface BikeService {
 
     void unLockBike(UserElement currentUser, Long bikeNo) throws SharingBikesException;
 
-    void lockBike(Long bikeNo) throws SharingBikesException;
-
     void lockBike(BikeLocation bikeLocation) throws SharingBikesException;
+
+    void reportLocation(BikeLocation bikeLocation) throws SharingBikesException;
 }

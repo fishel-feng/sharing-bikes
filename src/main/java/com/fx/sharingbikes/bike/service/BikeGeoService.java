@@ -3,6 +3,7 @@ package com.fx.sharingbikes.bike.service;
 import com.fx.sharingbikes.bike.entity.BikeLocation;
 import com.fx.sharingbikes.bike.entity.Point;
 import com.fx.sharingbikes.common.exception.SharingBikesException;
+import com.fx.sharingbikes.record.entity.RideContrail;
 import com.mongodb.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,7 @@ public class BikeGeoService {
             }
             return result;
         } catch (Exception e) {
-            log.error("fail to find around bike", e);
+            log.error("Fail to find around bike", e);
             throw new SharingBikesException("查找附近单车失败");
         }
     }
@@ -83,8 +84,31 @@ public class BikeGeoService {
 
             return result;
         } catch (Exception e) {
-            log.error("fail to find around bike", e);
+            log.error("Fail to find around bike", e);
             throw new SharingBikesException("查找附近单车失败");
+        }
+    }
+
+    public RideContrail rideContrail(String collection, String recordNo) throws SharingBikesException {
+        try {
+            DBObject object = mongoTemplate.getCollection(collection).findOne(new BasicDBObject("record_no", recordNo));
+            RideContrail rideContrail = new RideContrail();
+            rideContrail.setRideRecordNo((String) object.get("record_no"));
+            rideContrail.setBikeNo(((Integer) object.get("bike_no")).longValue());
+            BasicDBList locList = (BasicDBList) object.get("contrail");
+            List<Point> pointList = new ArrayList<>();
+            for (Object o : locList) {
+                BasicDBList locObj = (BasicDBList) ((BasicDBObject) o).get("loc");
+                Double[] temp=new Double[2];
+                locObj.toArray(temp);
+                Point point=new Point(temp);
+                pointList.add(point);
+            }
+            rideContrail.setContrail(pointList);
+            return rideContrail;
+        }catch (Exception e){
+            log.error("Fail to query ride contrail",e);
+            throw new SharingBikesException("查询单车轨迹失败");
         }
     }
 }

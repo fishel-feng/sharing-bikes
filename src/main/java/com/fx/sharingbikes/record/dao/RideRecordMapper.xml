@@ -33,6 +33,13 @@
         from ride_record
         where bike_no=#{bikeNo} and status=1
     </select>
+    <select id="selectRideRecordPage" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from ride_record
+        where user_id=#{userId} and id>#{lastId} and status=2
+        limit 10
+    </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from ride_record
     where id = #{id,jdbcType=BIGINT}

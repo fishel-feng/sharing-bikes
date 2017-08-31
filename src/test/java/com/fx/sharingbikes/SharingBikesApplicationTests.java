@@ -48,7 +48,10 @@ public class SharingBikesApplicationTests {
 
     @Test
     public void lockTest() throws SharingBikesException {
-        bikeService.lockBike(28000001L);
+        BikeLocation bikeLocation = new BikeLocation();
+        bikeLocation.setBikeNumber(28000001L);
+        bikeLocation.setCoordinates(new Double[]{126.732086, 45.741842});
+        bikeService.lockBike(bikeLocation);
     }
 
 }
