@@ -46,4 +46,9 @@ public class SharingBikesApplicationTests {
         bikeService.unLockBike(userElement, 28000001L);
     }
 
+    @Test
+    public void lockTest() throws SharingBikesException {
+        bikeService.lockBike(28000001L);
+    }
+
 }

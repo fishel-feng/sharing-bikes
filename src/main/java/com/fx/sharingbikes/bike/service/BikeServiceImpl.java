@@ -5,7 +5,10 @@ import com.fx.sharingbikes.bike.entity.Bike;
 import com.fx.sharingbikes.bike.entity.BikeNoGen;
 import com.fx.sharingbikes.common.exception.SharingBikesException;
 import com.fx.sharingbikes.common.utils.BaiduPushUtil;
+import com.fx.sharingbikes.common.utils.DateUtil;
 import com.fx.sharingbikes.common.utils.RandomNumberCode;
+import com.fx.sharingbikes.fee.dao.RideFeeMapper;
+import com.fx.sharingbikes.fee.entity.RideFee;
 import com.fx.sharingbikes.record.dao.RideRecordMapper;
 import com.fx.sharingbikes.record.entity.RideRecord;
 import com.fx.sharingbikes.user.dao.UserMapper;
@@ -29,9 +32,13 @@ import java.util.Date;
 @Slf4j
 public class BikeServiceImpl implements BikeService {
 
-    private static final int NOT_VERIFY = 1;
+    private static final Byte NOT_VERIFY = 1;
 
-    private static final int BIKE_UNLOCK = 2;
+    private static final Object BIKE_UNLOCK = 2;
+
+    private static final Byte RIDE_END = 2;
+
+    private static final Object BIKE_LOCK = 1;
 
     @Autowired
     private BikeMapper bikeMapper;
@@ -44,6 +51,9 @@ public class BikeServiceImpl implements BikeService {
 
     @Autowired
     private WalletMapper walletMapper;
+
+    @Autowired
+    private RideFeeMapper rideFeeMapper;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -89,6 +99,51 @@ public class BikeServiceImpl implements BikeService {
         } catch (Exception e) {
             log.error("Fail to unlock bike", e);
             throw new SharingBikesException("解锁单车失败");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void lockBike(Long bikeNo) throws SharingBikesException {
+        try {
+            RideRecord record = rideRecordMapper.selectBikeRecordOnGoing(bikeNo);
+            if (record == null) {
+                throw new SharingBikesException("骑行记录不存在");
+            }
+            Long userId = record.getUserId();
+            Bike bike = bikeMapper.selectByBikeNo(bikeNo);
+            if (bike == null) {
+                throw new SharingBikesException("单车不存在");
+            }
+            RideFee fee = rideFeeMapper.selectBikeTypeFee(bike.getType());
+            if (fee == null) {
+                throw new SharingBikesException("计费信息异常");
+            }
+            BigDecimal cost = BigDecimal.ZERO;
+            record.setEndTime(new Date());
+            record.setStatus(RIDE_END);
+            Long min = DateUtil.getBetweenMin(new Date(), record.getStartTime());
+            record.setRideTime(min.intValue());
+            int minUnit = fee.getMinUnit();
+            int intMin = min.intValue();
+            if (intMin / minUnit == 0) {
+                cost = fee.getFee();
+            } else if (intMin % minUnit == 0) {
+                cost = fee.getFee().multiply(new BigDecimal(intMin / minUnit));
+            } else if (intMin % minUnit != 0) {
+                cost = fee.getFee().multiply(new BigDecimal((intMin / minUnit) + 1));
+            }
+            record.setRideCost(cost);
+            rideRecordMapper.updateByPrimaryKeySelective(record);
+            Wallet wallet = walletMapper.selectByUserId(userId);
+            wallet.setRemainSum(wallet.getRemainSum().subtract(cost));
+            walletMapper.updateByPrimaryKeySelective(wallet);
+            Query query = Query.query(Criteria.where("bike_no").is(bikeNo));
+            Update update = Update.update("status", BIKE_LOCK);
+            mongoTemplate.updateFirst(query, update, "bike-position");
+        } catch (Exception e) {
+            log.error("Fail to lock bike", e);
+            throw new SharingBikesException("锁定单车失败");
         }
     }
 

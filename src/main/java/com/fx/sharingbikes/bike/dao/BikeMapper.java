@@ -17,4 +17,6 @@ public interface BikeMapper {
     int updateByPrimaryKey(Bike record);
 
     void generateBikeNo(BikeNoGen bikeNoGen);
+
+    Bike selectByBikeNo(Long bikeNo);
 }

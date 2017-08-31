@@ -16,4 +16,6 @@ public interface RideRecordMapper {
     int updateByPrimaryKey(RideRecord record);
 
     RideRecord selectRecordNotClosed(Long userId);
+
+    RideRecord selectBikeRecordOnGoing(Long bikeNo);
 }
