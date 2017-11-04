@@ -15,4 +15,6 @@ public class BikeLocation {
 
     private Double distance;
 
+    private Bike bikeInfo;
+
 }

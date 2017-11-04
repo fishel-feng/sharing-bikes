@@ -1,6 +1,7 @@
 package com.fx.sharingbikes;
 
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import com.fx.sharingbikes.common.swagger.FastJsonHttpMessageConverterEx;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
@@ -21,7 +22,7 @@ public class SharingBikesApplication {
 
     @Bean
     public HttpMessageConverters fastJsonHttpMessageConverters() {
-        FastJsonHttpMessageConverter fastConverter = new FastJsonHttpMessageConverter();
+        FastJsonHttpMessageConverter fastConverter = new FastJsonHttpMessageConverterEx();
         HttpMessageConverter<?> converter = fastConverter;
         return new HttpMessageConverters(converter);
     }

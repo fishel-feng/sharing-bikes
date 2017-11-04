@@ -97,7 +97,7 @@ public class BikeServiceImpl implements BikeService {
             mongoTemplate.updateFirst(query, update, "bike_position");
             RideRecord rideRecord = new RideRecord();
             rideRecord.setBikeNo(bikeNo);
-            String recordNo = new Date().getTime() + RandomNumberCode.randomNo();
+            String recordNo = System.currentTimeMillis() + RandomNumberCode.randomNo();
             rideRecord.setRecordNo(recordNo);
             rideRecord.setStartTime(new Date());
             rideRecord.setUserId(currentUser.getUserId());
